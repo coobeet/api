@@ -16,6 +16,10 @@ type echoServer struct {
 	coobeetv1connect.UnimplementedEchoServiceHandler
 }
 
+func NewEchoServer() *echoServer {
+	return &echoServer{}
+}
+
 func (s *echoServer) Echo(
 	ctx context.Context,
 	req *connect.Request[coobeetv1.EchoRequest],
@@ -27,7 +31,7 @@ func (s *echoServer) Echo(
 
 func main() {
 	mux := http.NewServeMux()
-	mux.Handle(coobeetv1connect.NewEchoServiceHandler(&echoServer{}))
+	mux.Handle(coobeetv1connect.NewEchoServiceHandler(NewEchoServer()))
 	handler := cors.AllowAll().Handler(mux)
 	handler = h2c.NewHandler(handler, &http2.Server{})
 	http.ListenAndServe("localhost:8080", handler)
