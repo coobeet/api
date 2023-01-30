@@ -64,6 +64,7 @@ func shutdown(ctx context.Context, server *http.Server) {
 	}
 }
 
+// test ci
 func main() {
 	mux := http.NewServeMux()
 	mux.Handle(coobeetv1connect.NewEchoServiceHandler(NewEchoServer()))
