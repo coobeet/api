@@ -47,7 +47,7 @@ name: Build and Deploy to Cloud Run
 on:
   push:
     branches:
-      - $default-branch
+      - main
 
 env:
   PROJECT_ID: coobeet
