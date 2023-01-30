@@ -13,6 +13,8 @@ import (
 	"buf.build/gen/go/coobeet/coobeet/bufbuild/connect-go/coobeet/v1/coobeetv1connect"
 	coobeetv1 "buf.build/gen/go/coobeet/coobeet/protocolbuffers/go/coobeet/v1"
 	"github.com/bufbuild/connect-go"
+	grpchealth "github.com/bufbuild/connect-grpchealth-go"
+	grpcreflect "github.com/bufbuild/connect-grpcreflect-go"
 	"github.com/rs/cors"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
@@ -71,6 +73,15 @@ func main() {
 		w.Write([]byte("OK"))
 	}))
 	mux.Handle(coobeetv1connect.NewEchoServiceHandler(NewEchoServer()))
+	mux.Handle(grpchealth.NewHandler(
+		grpchealth.NewStaticChecker(coobeetv1connect.EchoServiceName),
+	))
+	mux.Handle(grpcreflect.NewHandlerV1(
+		grpcreflect.NewStaticReflector(coobeetv1connect.EchoServiceName),
+	))
+	mux.Handle(grpcreflect.NewHandlerV1Alpha(
+		grpcreflect.NewStaticReflector(coobeetv1connect.EchoServiceName),
+	))
 	handler := cors.AllowAll().Handler(mux)
 	handler = h2c.NewHandler(handler, &http2.Server{})
 
