@@ -66,6 +66,10 @@ func shutdown(ctx context.Context, server *http.Server) {
 
 func main() {
 	mux := http.NewServeMux()
+	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("OK"))
+	}))
 	mux.Handle(coobeetv1connect.NewEchoServiceHandler(NewEchoServer()))
 	handler := cors.AllowAll().Handler(mux)
 	handler = h2c.NewHandler(handler, &http2.Server{})
