@@ -66,24 +66,65 @@ func shutdown(ctx context.Context, server *http.Server) {
 	}
 }
 
+func newCORS() *cors.Cors {
+	// To let web developers play with the demo service from browsers, we need a
+	// very permissive CORS setup.
+	return cors.New(cors.Options{
+		AllowedMethods: []string{
+			http.MethodHead,
+			http.MethodGet,
+			http.MethodPost,
+			http.MethodPut,
+			http.MethodPatch,
+			http.MethodDelete,
+		},
+		AllowOriginFunc: func(origin string) bool {
+			// Allow all origins, which effectively disables CORS.
+			return true
+		},
+		AllowedHeaders: []string{"*"},
+		ExposedHeaders: []string{
+			// Content-Type is in the default safelist.
+			"Accept",
+			"Accept-Encoding",
+			"Accept-Post",
+			"Connect-Accept-Encoding",
+			"Connect-Content-Encoding",
+			"Content-Encoding",
+			"Grpc-Accept-Encoding",
+			"Grpc-Encoding",
+			"Grpc-Message",
+			"Grpc-Status",
+			"Grpc-Status-Details-Bin",
+		},
+		// Let browsers cache CORS information for longer, which reduces the number
+		// of preflight requests. Any changes to ExposedHeaders won't take effect
+		// until the cached data expires. FF caps this value at 24h, and modern
+		// Chrome caps it at 2h.
+		MaxAge: int(2 * time.Hour / time.Second),
+	})
+}
+
 func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK"))
 	}))
-	mux.Handle(coobeetv1connect.NewEchoServiceHandler(NewEchoServer()))
+	compress1KB := connect.WithCompressMinBytes(1024)
+	mux.Handle(coobeetv1connect.NewEchoServiceHandler(NewEchoServer(), compress1KB))
 	mux.Handle(grpchealth.NewHandler(
 		grpchealth.NewStaticChecker(coobeetv1connect.EchoServiceName),
+		compress1KB,
 	))
 	mux.Handle(grpcreflect.NewHandlerV1(
 		grpcreflect.NewStaticReflector(coobeetv1connect.EchoServiceName),
+		compress1KB,
 	))
 	mux.Handle(grpcreflect.NewHandlerV1Alpha(
 		grpcreflect.NewStaticReflector(coobeetv1connect.EchoServiceName),
+		compress1KB,
 	))
-	handler := cors.AllowAll().Handler(mux)
-	handler = h2c.NewHandler(handler, &http2.Server{})
 
 	addr := "localhost:8080"
 	if port := os.Getenv("PORT"); port != "" {
@@ -91,7 +132,7 @@ func main() {
 	}
 	s := &http.Server{
 		Addr:              addr,
-		Handler:           handler,
+		Handler:           h2c.NewHandler(newCORS().Handler(mux), &http2.Server{}),
 		ReadHeaderTimeout: time.Second,
 		ReadTimeout:       5 * time.Minute,
 		WriteTimeout:      5 * time.Minute,
