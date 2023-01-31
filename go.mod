@@ -5,7 +5,7 @@ go 1.19
 require (
 	buf.build/gen/go/coobeet/coobeet/bufbuild/connect-go v1.4.1-20230111144408-19080c9c78d6.1
 	buf.build/gen/go/coobeet/coobeet/protocolbuffers/go v1.28.1-20230111144408-19080c9c78d6.4
-	github.com/bufbuild/connect-go v1.4.1
+	github.com/bufbuild/connect-go v1.5.0
 	github.com/bufbuild/connect-grpchealth-go v1.0.0
 	github.com/bufbuild/connect-grpcreflect-go v1.0.0
 	github.com/rs/cors v1.8.3
