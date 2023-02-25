@@ -9,7 +9,7 @@ require (
 	github.com/bufbuild/connect-grpchealth-go v1.0.0
 	github.com/bufbuild/connect-grpcreflect-go v1.0.0
 	github.com/rs/cors v1.8.3
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.2
 	golang.org/x/net v0.5.0
 )
 
